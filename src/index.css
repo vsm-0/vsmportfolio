@@ -1,0 +1,333 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@300;400;500;600;700;800&family=Poppins:wght@300;400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Royal Portfolio Color System - Deep Black/Gold Theme */
+    --background: 216 28% 6%; /* #0B0F14 Deep Black */
+    --foreground: 0 0% 98%; /* White text */
+
+    --card: 216 28% 8%;
+    --card-foreground: 0 0% 98%;
+
+    --popover: 216 28% 8%;
+    --popover-foreground: 0 0% 98%;
+
+    /* Gold Primary */
+    --primary: 43 66% 52%; /* #D4AF37 Shining Gold */
+    --primary-foreground: 216 28% 6%;
+
+    /* Slate Secondary */
+    --secondary: 216 20% 14%;
+    --secondary-foreground: 0 0% 98%;
+
+    --muted: 216 20% 18%;
+    --muted-foreground: 216 10% 60%;
+
+    /* Gold Accent */
+    --accent: 43 66% 52%;
+    --accent-foreground: 216 28% 6%;
+
+    /* Maroon for progress bars */
+    --maroon: 0 50% 35%;
+    --maroon-foreground: 0 0% 98%;
+
+    /* Silver borders */
+    --silver: 0 0% 75%; /* #C0C0C0 */
+
+    /* Gold color - from elite portfolio */
+    --gold: 43 66% 52%; /* #D4AF37 */
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 216 20% 18%;
+    --input: 216 20% 18%;
+    --ring: 43 66% 52%;
+
+    --radius: 0.75rem;
+
+    /* Custom gradients and effects */
+    --gold-gradient: linear-gradient(135deg, hsl(43, 66%, 52%) 0%, hsl(43, 80%, 65%) 50%, hsl(43, 66%, 52%) 100%);
+    --glass-bg: rgba(255, 255, 255, 0.05);
+    --glass-border: rgba(192, 192, 192, 0.2);
+    --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+
+    /* Sidebar */
+    --sidebar-background: 216 28% 8%;
+    --sidebar-foreground: 0 0% 98%;
+    --sidebar-primary: 43 66% 52%;
+    --sidebar-primary-foreground: 216 28% 6%;
+    --sidebar-accent: 216 20% 14%;
+    --sidebar-accent-foreground: 0 0% 98%;
+    --sidebar-border: 216 20% 18%;
+    --sidebar-ring: 43 66% 52%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-family: 'Playfair Display', serif;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Playfair Display', serif;
+  }
+
+  /* Use Poppins for all numbers */
+  body {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Target all numbers to use Poppins - comprehensive rules */
+  .number,
+  [class*="number"],
+  time,
+  .text-sm:has(> time),
+  span:has(> time),
+  [data-year],
+  [data-date],
+  .year,
+  .date,
+  .percentage,
+  [class*="percentage"],
+  [class*="count"],
+  [class*="stat"],
+  sup,
+  sub {
+    font-family: 'Poppins', sans-serif !important;
+  }
+
+  /* Catch numbers in text content */
+  p:has(> span:matches-text(/\d/)),
+  div:has(> span:matches-text(/\d/)),
+  li:has(> span:matches-text(/\d/)) {
+    font-variant-numeric: lining-nums;
+  }
+}
+
+@layer components {
+  /* Poppins font for numbers utility class */
+  .font-numbers {
+    font-family: 'Poppins', sans-serif !important;
+    font-variant-numeric: lining-nums tabular-nums;
+  }
+
+  /* Glassmorphism Card */
+  .glass-card {
+    @apply rounded-xl;
+    background: var(--glass-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow);
+  }
+
+  /* Gold shimmer text */
+  .gold-text {
+    @apply text-primary;
+    background: var(--gold-gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  /* Gold shimmer animation */
+  .gold-shimmer {
+    background: linear-gradient(
+      90deg,
+      hsl(43, 66%, 52%) 0%,
+      hsl(43, 80%, 70%) 50%,
+      hsl(43, 66%, 52%) 100%
+    );
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: shimmer 3s linear infinite;
+  }
+
+  @keyframes shimmer {
+    0% { background-position: 0% center; }
+    100% { background-position: 200% center; }
+  }
+
+  /* Glowing gold border */
+  .gold-border-glow {
+    @apply relative;
+  }
+
+  .gold-border-glow::before {
+    content: '';
+    @apply absolute inset-0 rounded-xl opacity-0 transition-opacity duration-300;
+    background: linear-gradient(135deg, hsl(43, 66%, 52%, 0.3), transparent);
+  }
+
+  .gold-border-glow:hover::before {
+    @apply opacity-100;
+  }
+
+  /* Progress bar with yellowish-orange gradient */
+  .progress-maroon {
+    @apply relative h-2 w-full overflow-hidden rounded-full;
+    background: hsl(var(--secondary));
+  }
+
+  .progress-maroon-fill {
+    @apply h-full rounded-full transition-all duration-1000 ease-out;
+    background: linear-gradient(90deg, hsl(43, 66%, 52%) 0%, hsl(30, 100%, 50%) 50%, hsl(43, 66%, 52%) 100%);
+  }
+
+  /* Timeline styles */
+  .timeline-node {
+    @apply w-4 h-4 rounded-full relative;
+    background: hsl(var(--primary));
+    box-shadow: 0 0 20px hsl(43, 66%, 52%, 0.5);
+  }
+
+  .timeline-line {
+    @apply w-0.5 h-full absolute left-1/2 -translate-x-1/2;
+    background: linear-gradient(180deg, hsl(var(--primary)) 0%, transparent 100%);
+  }
+
+  /* Button hover glow */
+  .btn-glow {
+    @apply relative overflow-hidden;
+  }
+
+  .btn-glow::after {
+    content: '';
+    @apply absolute inset-0 opacity-0 transition-opacity duration-300;
+    background: radial-gradient(circle at center, hsl(43, 66%, 52%, 0.3), transparent);
+  }
+
+  .btn-glow:hover::after {
+    @apply opacity-100;
+  }
+
+  /* Floating animation */
+  .float-animation {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-20px); }
+  }
+
+  /* Pulse glow animation */
+  .pulse-glow {
+    animation: pulse-glow 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse-glow {
+    0%, 100% { 
+      box-shadow: 0 0 20px hsl(43, 66%, 52%, 0.3);
+    }
+    50% { 
+      box-shadow: 0 0 40px hsl(43, 66%, 52%, 0.6);
+    }
+  }
+
+  /* Typewriter cursor */
+  .typewriter-cursor {
+    @apply inline-block w-0.5 h-6 ml-1;
+    background: hsl(var(--primary));
+    animation: blink 1s infinite;
+  }
+
+  @keyframes blink {
+    0%, 50% { opacity: 1; }
+    51%, 100% { opacity: 0; }
+  }
+
+  /* Aurora background effect */
+  .aurora-bg {
+    @apply absolute inset-0 overflow-hidden pointer-events-none;
+  }
+
+  .aurora-bg::before {
+    content: '';
+    @apply absolute w-full h-full;
+    background: radial-gradient(ellipse at 20% 50%, hsl(43, 66%, 52%, 0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 20%, hsl(43, 80%, 60%, 0.05) 0%, transparent 40%),
+                radial-gradient(ellipse at 60% 80%, hsl(0, 50%, 35%, 0.05) 0%, transparent 40%);
+    animation: aurora 15s ease-in-out infinite;
+  }
+
+  @keyframes aurora {
+    0%, 100% { 
+      transform: translate(0, 0) scale(1);
+      opacity: 0.6;
+    }
+    33% { 
+      transform: translate(5%, 5%) scale(1.05);
+      opacity: 0.8;
+    }
+    66% { 
+      transform: translate(-5%, 3%) scale(0.98);
+      opacity: 0.7;
+    }
+  }
+
+  /* Section reveal animation */
+  .reveal-section {
+    @apply opacity-0 translate-y-8;
+    transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+  }
+
+  .reveal-section.revealed {
+    @apply opacity-100 translate-y-0;
+  }
+}
+
+/* Custom scrollbar - vertical */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: hsl(216, 28%, 6%);
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, hsl(43, 66%, 52%, 0.4) 0%, hsl(30, 100%, 50%, 0.4) 100%);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, hsl(43, 66%, 52%, 0.6) 0%, hsl(30, 100%, 50%, 0.6) 100%);
+}
+
+/* Poppins font for numbers - universal selector */
+* {
+  font-variant-numeric: inherit;
+}
+
+/* Apply Poppins to elements containing primarily numbers */
+.font-mono,
+code,
+pre,
+kbd,
+samp {
+  font-family: 'Poppins', monospace;
+}
+
+/* Specific number styling */
+@supports (font-variant-numeric: tabular-nums) {
+  body {
+    font-variant-numeric: tabular-nums;
+  }
+}
