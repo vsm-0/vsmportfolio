@@ -1,8 +1,29 @@
 import { motion } from "framer-motion";
 import { useInView } from "framer-motion";
 import { useRef } from "react";
-import { Languages } from "lucide-react";
+import {
+  Languages,
+  Mic,
+  HeartHandshake,
+  Palette,
+  Globe,
+  Brain,
+  Podcast,
+  Lotus,
+} from "lucide-react";
 
+/* -------------------- HOBBIES DATA -------------------- */
+const hobbiesData = [
+  { name: "Singing", icon: Mic },
+  { name: "Volunteering", icon: HeartHandshake },
+  { name: "Designing Digital Arts", icon: Palette },
+  { name: "Internet Surfing", icon: Globe },
+  { name: "Exploring AI Tools", icon: Brain },
+  { name: "Podcasting", icon: Podcast },
+  { name: "Meditation", icon: Lotus },
+];
+
+/* -------------------- LANGUAGES DATA -------------------- */
 const languagesData = [
   { name: "English" },
   { name: "Telugu" },
@@ -23,7 +44,43 @@ const LanguagesSection = () => {
           transition={{ duration: 0.5 }}
           className="max-w-3xl mx-auto"
         >
-          {/* Section Title */}
+          {/* ================= HOBBIES & INTERESTS ================= */}
+          <div className="mb-16">
+            {/* Hobbies Title */}
+            <div className="flex items-center justify-center gap-3 mb-8">
+              <span className="text-gold text-xl">✦</span>
+              <h2 className="text-2xl md:text-3xl font-serif font-bold gold-shimmer">
+                Hobbies & Interests
+              </h2>
+            </div>
+
+            {/* Hobbies Pills */}
+            <div className="flex flex-wrap justify-center gap-4">
+              {hobbiesData.map((hobby, index) => {
+                const Icon = hobby.icon;
+                return (
+                  <motion.div
+                    key={hobby.name}
+                    initial={{ opacity: 0, scale: 0.85 }}
+                    animate={isInView ? { opacity: 1, scale: 1 } : {}}
+                    transition={{ delay: index * 0.08, duration: 0.3 }}
+                    whileHover={{ scale: 1.06 }}
+                    className="glass-card px-5 py-2.5 flex items-center gap-3 border border-primary/20 hover:border-primary/50 transition-colors"
+                  >
+                    <Icon
+                      size={18}
+                      className="text-gold shrink-0"
+                    />
+                    <span className="text-foreground font-medium text-sm md:text-base">
+                      {hobby.name}
+                    </span>
+                  </motion.div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* ================= LANGUAGES ================= */}
           <div className="flex items-center justify-center gap-3 mb-8">
             <Languages className="text-primary" size={28} />
             <h2 className="text-2xl md:text-3xl font-serif font-bold gold-shimmer">
@@ -42,7 +99,9 @@ const LanguagesSection = () => {
                 whileHover={{ scale: 1.05 }}
                 className="glass-card px-6 py-3 flex items-center gap-3 border border-primary/20 hover:border-primary/50 transition-colors"
               >
-                <span className="text-foreground font-medium">{lang.name}</span>
+                <span className="text-foreground font-medium">
+                  {lang.name}
+                </span>
               </motion.div>
             ))}
           </div>
