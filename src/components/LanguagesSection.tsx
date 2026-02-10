@@ -9,7 +9,7 @@ import {
   Globe,
   Brain,
   Podcast,
-  Lotus,
+  Flower,
 } from "lucide-react";
 
 /* -------------------- HOBBIES DATA -------------------- */
@@ -20,7 +20,7 @@ const hobbiesData = [
   { name: "Internet Surfing", icon: Globe },
   { name: "Exploring AI Tools", icon: Brain },
   { name: "Podcasting", icon: Podcast },
-  { name: "Meditation", icon: Lotus },
+  { name: "Meditation", icon: Flower },
 ];
 
 /* -------------------- LANGUAGES DATA -------------------- */
