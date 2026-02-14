@@ -150,7 +150,7 @@ const SpirographLoader = ({ onComplete }: SpirographLoaderProps) => {
                   opacity: [0, 1, 0.95],
                 }}
                 transition={{
-                  duration: 1,
+                  duration: 6,
                   delay: 0.5,
                   repeat: Infinity,
                   repeatType: "reverse",
@@ -184,7 +184,19 @@ const SpirographLoader = ({ onComplete }: SpirographLoaderProps) => {
                 );
               })}
 
-              
+              {/* Rotating outer glow effect */}
+              <motion.g
+                animate={{ 
+                  rotate: [0, 360],
+                }}
+                transition={{
+                  duration: 6,
+                  repeat: Infinity,
+                  ease: "linear",
+                }}
+                style={{ transformOrigin: "150px 150px" }}
+              >
+              </motion.g>
             </svg>
 
             {/* Outer glow effect */}
@@ -220,10 +232,10 @@ const SpirographLoader = ({ onComplete }: SpirographLoaderProps) => {
     ease: "easeOut",
     delay: 0.2,
   }}
-  className="w-full max-w-lg flex justify-center -mt-12"
+  className="w-full max-w-2xl flex justify-center -mt-12"
 >
   <motion.div 
-    className="w-full relative px-5 py-4 rounded-lg backdrop-blur-sm bg-background/10"
+    className="w-full relative p-6 rounded-lg backdrop-blur-sm bg-background/10"
     style={{
       boxShadow: '0 0 20px rgba(192, 192, 192, 0.3)',
     }}
@@ -266,7 +278,7 @@ const SpirographLoader = ({ onComplete }: SpirographLoaderProps) => {
     />
     
     {/* Terminal text area - text left aligned */}
-    <div className="text-left space-y-1 relative z-10">
+    <div className="text-left space-y-2 relative z-10">
                 {bootMessages.map((msg, index) => (
                   <motion.div
                     key={index}
@@ -282,7 +294,7 @@ const SpirographLoader = ({ onComplete }: SpirographLoaderProps) => {
               </div>
 
               {/* Bottom status bar - center aligned */}
-              <div className="flex justify-center text-gold text-sm md:text-base mt-1" style={{ fontFamily: 'Poppins, sans-serif' }}>
+              <div className="flex justify-center text-gold text-sm md:text-base mt-8" style={{ fontFamily: 'Poppins, sans-serif' }}>
                 <motion.span 
                   animate={{ opacity: [1, 0.5, 1] }}
                   transition={{ duration: 1.5, repeat: Infinity }}
@@ -294,7 +306,7 @@ const SpirographLoader = ({ onComplete }: SpirographLoaderProps) => {
 
               {/* Loading bar - center aligned with gold gradient */}
               <div className="mt-6 flex justify-center">
-                <div className="h-1 w-full md:w-1/2 bg-secondary/30 rounded-full overflow-hidden">
+                <div className="h-1.5 w-full md:w-2/3 bg-secondary/30 rounded-full overflow-hidden">
                   <motion.div
                     className="h-full rounded-full"
                     style={{
