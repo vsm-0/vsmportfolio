@@ -56,7 +56,7 @@ const AboutSection = () => {
             <p className="text-lg md:text-xl leading-relaxed text-muted-foreground mt-6">
               Driven by a strong interest in{" "}
               <span className="text-primary">front-end engineering and user experience</span>, I enjoy translating complex ideas into clean, intuitive interfaces and meaningful digital products. With hands-on experience in{" "}
-              <span className="text-foreground">HTML, CSS, JS, React,</span>,{" "}
+              <span className="text-foreground">HTML, CSS, JS, React,</span>{" "}
               <span className="text-foreground">TypeScript, Tailwind CSS, Vite</span>, Front end Development and full-stack project collaboration, complemented by internships in Python development and marketing analytics, I bring a balanced mix of{" "}
               <span className="text-primary">technical depth</span>,{" "}
               <span className="text-primary">data-driven thinking</span>, and{" "}
