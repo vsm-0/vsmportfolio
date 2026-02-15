@@ -232,10 +232,11 @@ const SpirographLoader = ({ onComplete }: SpirographLoaderProps) => {
     ease: "easeOut",
     delay: 0.2,
   }}
-  className="w-full max-w-2xl flex justify-center -mt-12"
+  className="w-full max-w-2xl flex justify-center relative"
+style={{ transform: "translateX(40px) translateY(-60px)" }}
 >
   <motion.div 
-    className="w-full relative p-6 rounded-lg backdrop-blur-sm bg-background/10"
+    className="w-full relative px-3 py-2 rounded-lg backdrop-blur-sm bg-background/10"
     style={{
       boxShadow: '0 0 20px rgba(192, 192, 192, 0.3)',
     }}
@@ -278,7 +279,7 @@ const SpirographLoader = ({ onComplete }: SpirographLoaderProps) => {
     />
     
     {/* Terminal text area - text left aligned */}
-    <div className="text-left space-y-2 relative z-10">
+    <div className="text-left space-y-2 relative z-10 translate-x-40">
                 {bootMessages.map((msg, index) => (
                   <motion.div
                     key={index}
