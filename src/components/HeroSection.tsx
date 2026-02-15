@@ -2,7 +2,6 @@
 // HeroSection.tsx
 // ─────────────────────────────────────────────────────────────
 // VIDEO PLAYBACK LOGIC:
-//
 //  Phase 1 — Autoplay (0 s → 4 s):
 //    • Fires once on mount (after splash completes).
 //    • Video plays muted, no controls, object-fit: cover.
@@ -11,19 +10,25 @@
 //    • Falls back gracefully if autoplay is blocked.
 //
 //  Phase 2 — Scroll-triggered, SCREEN LOCKED (4 s → 8 s):
-//    • On the FIRST scroll event, page scroll is LOCKED
+//    • On the FIRST downward scroll, page scroll is LOCKED
 //      (overflow: hidden on body) so the screen stays static.
 //    • The remaining 4 s plays at normal speed, stops at 8.0 s.
 //    • Once video ends, body scroll is UNLOCKED.
-//    • scrollPhaseActiveRef is locked to false immediately so
+//    • scrollPhaseActiveRef is disarmed immediately so
 //      no further scroll events affect the video.
 //
-//  Phase 3 — Second scroll → smooth scroll to #about
-//    • After video finishes, next scroll event smoothly
-//      scrolls to the #about section.
+//  Phase 3 — Next downward scroll → smooth scroll to #about
+//    • After video finishes, next downward scroll event
+//      smoothly scrolls to the #about section.
+//
+//  Phase 4 — Scroll back UP to hero → cinematic rewind 8 s → 4 s
+//    • Detected by comparing currentScrollY vs lastScrollYRef.
+//    • Fires when: scrolling upward AND hero is in viewport
+//      AND videoCompleteRef is true AND rewind not in progress.
+//    • Re-arms Phase 2 after rewind completes.
 // ============================================================
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { motion } from "framer-motion";
 import { Mail, Linkedin, Github, FileText, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -56,14 +61,18 @@ const HeroSection = () => {
   const [isDeleting, setIsDeleting]             = useState(false);
 
   // ─── Refs for video control ───────────────────────────────
-  const videoRef             = useRef<HTMLVideoElement>(null);
-  const heroSectionRef       = useRef<HTMLDivElement>(null);
-  const rafIdRef             = useRef<number | null>(null);
+  const videoRef       = useRef<HTMLVideoElement>(null);
+  const heroSectionRef = useRef<HTMLDivElement>(null);
+  const rafIdRef       = useRef<number | null>(null);
 
   // Phase flags
-  const scrollPhaseActiveRef = useRef(false);  // true = waiting for first scroll to play 4→8s
-  const videoCompleteRef     = useRef(false);  // true = video finished, next scroll goes to about
-  const scrollLockedRef      = useRef(false);  // true = currently locked during video playback
+  const scrollPhaseActiveRef = useRef(false); // true  = waiting for first downward scroll to play 4→8s
+  const videoCompleteRef     = useRef(false); // true  = video sitting at 8s, Phase 3/4 armed
+  const scrollLockedRef      = useRef(false); // true  = body scroll currently locked
+  const reversePlayingRef    = useRef(false); // true  = rewind rAF in progress
+
+  // Scroll direction tracking
+  const lastScrollYRef = useRef(0);
 
   // ─── Typewriter effect ────────────────────────────────────
   useEffect(() => {
@@ -82,11 +91,11 @@ const HeroSection = () => {
     }
 
     const timeout = setTimeout(() => {
-      if (isDeleting) {
-        setDisplayedRole(currentRole.slice(0, displayedRole.length - 1));
-      } else {
-        setDisplayedRole(currentRole.slice(0, displayedRole.length + 1));
-      }
+      setDisplayedRole(
+        isDeleting
+          ? currentRole.slice(0, displayedRole.length - 1)
+          : currentRole.slice(0, displayedRole.length + 1)
+      );
     }, typeSpeed);
 
     return () => clearTimeout(timeout);
@@ -94,35 +103,81 @@ const HeroSection = () => {
 
   // ─── Scroll-to-contact helper ─────────────────────────────
   const scrollToContact = () => {
-    const element = document.querySelector("#contact");
-    if (element) {
-      element.scrollIntoView({ behavior: "smooth" });
-    }
+    document.querySelector("#contact")?.scrollIntoView({ behavior: "smooth" });
   };
 
-  // ─── Lock/unlock body scroll ──────────────────────────────
-  const lockScroll = () => {
-    // Save current scroll position and freeze it
+  // ─── Lock / unlock body scroll ────────────────────────────
+  const lockScroll = useCallback(() => {
+    if (scrollLockedRef.current) return;
     const scrollY = window.scrollY;
-    document.body.style.position   = "fixed";
-    document.body.style.top        = `-${scrollY}px`;
-    document.body.style.left       = "0";
-    document.body.style.right      = "0";
-    document.body.style.overflow   = "hidden";
+    document.body.style.position = "fixed";
+    document.body.style.top      = `-${scrollY}px`;
+    document.body.style.left     = "0";
+    document.body.style.right    = "0";
+    document.body.style.overflow = "hidden";
     scrollLockedRef.current = true;
-  };
+  }, []);
 
-  const unlockScroll = () => {
-    const scrollY = document.body.style.top;
+  const unlockScroll = useCallback(() => {
+    if (!scrollLockedRef.current) return;
+    const savedTop = document.body.style.top;
     document.body.style.position = "";
     document.body.style.top      = "";
     document.body.style.left     = "";
     document.body.style.right    = "";
     document.body.style.overflow = "";
-    // Restore the scroll position so page doesn't jump
-    window.scrollTo(0, parseInt(scrollY || "0") * -1);
+    window.scrollTo(0, parseInt(savedTop || "0") * -1);
     scrollLockedRef.current = false;
-  };
+  }, []);
+
+  // ─── Phase 4: Cinematic rewind 8 s → 4 s ─────────────────
+  const rewindVideoToFour = useCallback(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    // Cancel any existing rAF before starting a new one
+    if (rafIdRef.current !== null) {
+      cancelAnimationFrame(rafIdRef.current);
+      rafIdRef.current = null;
+    }
+
+    reversePlayingRef.current = true;
+    videoCompleteRef.current  = false; // disarm Phase 3 while rewinding
+    lockScroll();
+
+    const startTime      = VIDEO_SCROLL_END;   // 8.0
+    const endTime        = VIDEO_SCROLL_START; // 4.0
+    const duration       = 1200;               // ms — cinematic smooth
+    const startTimestamp = performance.now();
+
+    const animateRewind = (now: number) => {
+      const elapsed  = now - startTimestamp;
+      const progress = Math.min(elapsed / duration, 1);
+
+      // Ease-in-out (sinusoidal feel)
+      const eased =
+        progress < 0.5
+          ? 2 * progress * progress
+          : 1 - Math.pow(-2 * progress + 2, 2) / 2;
+
+      video.currentTime = startTime - (startTime - endTime) * eased;
+
+      if (progress < 1) {
+        rafIdRef.current = requestAnimationFrame(animateRewind);
+      } else {
+        video.currentTime         = endTime;
+        reversePlayingRef.current = false;
+        rafIdRef.current          = null;
+        unlockScroll();
+
+        // Re-arm Phase 2 so the sequence can play again
+        scrollPhaseActiveRef.current = true;
+        videoCompleteRef.current     = false;
+      }
+    };
+
+    rafIdRef.current = requestAnimationFrame(animateRewind);
+  }, [lockScroll, unlockScroll]);
 
   // ─── Phase 1: autoplay 0 s → 4 s ─────────────────────────
   useEffect(() => {
@@ -135,7 +190,7 @@ const HeroSection = () => {
       if (video.currentTime >= VIDEO_AUTOPLAY_END) {
         video.pause();
         video.currentTime            = VIDEO_AUTOPLAY_END;
-        scrollPhaseActiveRef.current = true;   // unlock scroll phase
+        scrollPhaseActiveRef.current = true;
         video.removeEventListener("timeupdate", handleTimeUpdate);
       }
     };
@@ -145,7 +200,7 @@ const HeroSection = () => {
     const playPromise = video.play();
     if (playPromise !== undefined) {
       playPromise.catch(() => {
-        // Autoplay blocked — skip straight to scroll phase
+        // Autoplay blocked — jump straight to scroll phase
         video.currentTime            = VIDEO_AUTOPLAY_END;
         scrollPhaseActiveRef.current = true;
         video.removeEventListener("timeupdate", handleTimeUpdate);
@@ -158,47 +213,59 @@ const HeroSection = () => {
     };
   }, []);
 
-  // ─── Phase 2 & 3: scroll handling ────────────────────────
+  // ─── Phases 2, 3 & 4: unified scroll handler ─────────────
   useEffect(() => {
+    // Seed initial position so the first event has a valid baseline
+    lastScrollYRef.current = window.scrollY;
+
     const handleScroll = () => {
-      // ── Phase 3: video already done, scroll to about ──────
-      if (videoCompleteRef.current) {
-        videoCompleteRef.current = false; // prevent repeated triggers
-        const aboutSection = document.querySelector("#about");
-        if (aboutSection) {
-          aboutSection.scrollIntoView({ behavior: "smooth" });
+      const currentScrollY = window.scrollY;
+      const scrollingUp    = currentScrollY < lastScrollYRef.current;
+      lastScrollYRef.current = currentScrollY;
+
+      // ── Phase 4: upward scroll, hero visible, video at 8 s ─
+      // Must be checked BEFORE Phase 3 so we intercept the
+      // upward scroll before it can accidentally fire Phase 3.
+      if (scrollingUp && !reversePlayingRef.current && videoCompleteRef.current) {
+        const heroRect    = heroSectionRef.current?.getBoundingClientRect();
+        const heroVisible = heroRect
+          ? heroRect.top < window.innerHeight && heroRect.bottom > 0
+          : false;
+
+        if (heroVisible) {
+          rewindVideoToFour();
+          return;
         }
+      }
+
+      // ── Phase 3: downward scroll after video complete ──────
+      if (videoCompleteRef.current && !scrollingUp) {
+        videoCompleteRef.current = false; // consume to prevent re-trigger
+        document.querySelector("#about")?.scrollIntoView({ behavior: "smooth" });
         return;
       }
 
-      // ── Phase 2: first scroll → lock screen & play 4→8s ──
+      // ── Phase 2: first downward scroll → lock & play 4→8 s ─
       if (!scrollPhaseActiveRef.current) return;
+      if (scrollingUp) return; // only trigger Phase 2 on downward scroll
 
-      // Lock immediately — only fires once
+      // Disarm immediately — this block must fire exactly once
       scrollPhaseActiveRef.current = false;
 
       const video = videoRef.current;
       if (!video) return;
 
-      // Lock the page scroll so screen stays static
       lockScroll();
-
-      // Ensure we start from exactly 4.0 s
       video.currentTime = VIDEO_SCROLL_START;
-
-      // Play the remaining 4 s (4 → 8) at normal speed
       video.play().catch(() => {});
 
-      // Stop precisely at 8.0 s, then unlock scroll
       const stopAtEnd = () => {
         if (video.currentTime >= VIDEO_SCROLL_END) {
           video.pause();
           video.currentTime = VIDEO_SCROLL_END;
           video.removeEventListener("timeupdate", stopAtEnd);
-
-          // Unlock the page and mark video as complete
           unlockScroll();
-          videoCompleteRef.current = true;
+          videoCompleteRef.current = true; // arm Phase 3 & 4
         }
       };
       video.addEventListener("timeupdate", stopAtEnd);
@@ -206,24 +273,16 @@ const HeroSection = () => {
 
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  }, [rewindVideoToFour, lockScroll, unlockScroll]);
 
-  // ─── Cancel rAF on unmount ────────────────────────────────
+  // ─── Cancel any in-flight rAF on unmount ─────────────────
   useEffect(() => {
-  const animate = () => {
-    // animation logic
-    rafIdRef.current = requestAnimationFrame(animate);
-  };
-
-  const id = requestAnimationFrame(animate);
-  rafIdRef.current = id;
-
-  return () => {
-    if (rafIdRef.current !== null) {
-      cancelAnimationFrame(rafIdRef.current);
-    }
-  };
-}, []);
+    return () => {
+      if (rafIdRef.current !== null) {
+        cancelAnimationFrame(rafIdRef.current);
+      }
+    };
+  }, []);
 
   // ─────────────────────────────────────────────────────────
   return (
@@ -271,14 +330,22 @@ const HeroSection = () => {
         style={{ position: "relative", zIndex: 2 }}
       >
         <div className="max-w-4xl mx-auto text-center">
+
           {/* Greeting */}
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="text-lg md:text-xl text-gold mb-4 font-mono drop-shadow-[0_8px_20px_rgba(0,0,0,0.95)]"
+            className="text-lg md:text-xl text-gold mb-4 font-mono"
+            style={{
+              textShadow:
+                "0 2px 4px rgba(0, 0, 0, 0.8), " +
+                "0 4px 8px rgba(0, 0, 0, 0.9), " +
+                "0 8px 16px rgba(0, 0, 0, 0.95), " +
+                "0 12px 24px rgba(0, 0, 0, 1)",
+            }}
           >
-            {">"} Hello, World! I'm
+            {">"} Hello, World! I&apos;m
           </motion.p>
 
           {/* Name */}
@@ -287,24 +354,30 @@ const HeroSection = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4, duration: 0.6 }}
             className="text-5xl sm:text-5xl md:text-7xl font-serif font-bold mb-6 bg-gradient-to-r from-gold via-white to-gold bg-clip-text text-transparent drop-shadow-[0_0_20px_rgba(212,175,55,0.6)]"
-
           >
             VEENA SREE MAHARANA
           </motion.h1>
 
-          {/* Dynamic Role — BOLD */}
+          {/* Dynamic Role */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.6 }}
             className="h-10 mb-8"
           >
-            <span className="text-xl md:text-2xl text-gold font-bold 
-                 drop-shadow-[0_8px_25px_rgba(0,0,0,1)] 
-                 px-1 py-1 inline-block">
-  {displayedRole}
-  <span className="animate-pulse">|</span>
-</span>
+            <span
+              className="text-xl md:text-2xl text-gold font-bold px-1 py-1 inline-block"
+              style={{
+                textShadow:
+                  "0 2px 4px rgba(0, 0, 0, 0.85), " +
+                  "0 4px 8px rgba(0, 0, 0, 0.92), " +
+                  "0 8px 16px rgba(0, 0, 0, 0.96), " +
+                  "0 12px 24px rgba(0, 0, 0, 1)",
+              }}
+            >
+              {displayedRole}
+              <span className="animate-pulse">|</span>
+            </span>
           </motion.div>
 
           {/* CTA Buttons */}
