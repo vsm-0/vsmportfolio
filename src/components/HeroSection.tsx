@@ -276,7 +276,7 @@ const HeroSection = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="text-lg md:text-xl text-gold mb-4 font-mono drop-shadow-[0_4px_10px_rgba(0,0,0,0.8)]"
+            className="text-lg md:text-xl text-gold mb-4 font-mono drop-shadow-[0_8px_20px_rgba(0,0,0,0.95)]"
           >
             {">"} Hello, World! I'm
           </motion.p>
@@ -286,7 +286,8 @@ const HeroSection = () => {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4, duration: 0.6 }}
-            className="text-5xl sm:text-5xl md:text-7xl font-serif font-bold mb-6 bg-gradient-to-r from-gold via-white to-gold bg-clip-text text-transparent drop-shadow-[0_6px_20px_rgba(0,0,0,0.9)]"
+            className="text-5xl sm:text-5xl md:text-7xl font-serif font-bold mb-6 bg-gradient-to-r from-gold via-white to-gold bg-clip-text text-transparent drop-shadow-[0_0_20px_rgba(212,175,55,0.6)]"
+
           >
             VEENA SREE MAHARANA
           </motion.h1>
@@ -298,10 +299,12 @@ const HeroSection = () => {
             transition={{ delay: 0.6 }}
             className="h-10 mb-8"
           >
-            <span className="text-xl md:text-2xl text-gold font-bold drop-shadow-[0_4px_10px_rgba(0,0,0,0.8)]">
-              {displayedRole}
-              <span className="animate-pulse">|</span>
-            </span>
+            <span className="text-xl md:text-2xl text-gold font-bold 
+                 drop-shadow-[0_8px_25px_rgba(0,0,0,1)] 
+                 px-1 py-1 inline-block">
+  {displayedRole}
+  <span className="animate-pulse">|</span>
+</span>
           </motion.div>
 
           {/* CTA Buttons */}
@@ -339,7 +342,7 @@ const HeroSection = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 1 }}
-            className="flex justify-center gap-6"
+            className="flex justify-center gap-4"
           >
             {[
               { icon: Mail,     href: "mailto:veenasreemaharana@gmail.com",        label: "Email"    },
@@ -353,7 +356,7 @@ const HeroSection = () => {
                 rel="noopener noreferrer"
                 whileHover={{ scale: 1.2, y: -5 }}
                 whileTap={{ scale: 0.9 }}
-                className="p-3 rounded-full glass-card border border-silver/20 text-muted-foreground hover:text-primary hover:border-primary/50 transition-colors"
+                className="px-4 py-4 rounded-full glass-card border border-silver/20 text-muted-foreground hover:text-primary hover:border-primary/50 transition-colors"
                 aria-label={social.label}
               >
                 <social.icon size={24} />
@@ -367,7 +370,7 @@ const HeroSection = () => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 1.2 }}
-          className="absolute bottom-10 left-1/2 -translate-x-1/2"
+          className="absolute bottom-8 left-1/2 -translate-x-1/2"
         >
           <motion.div
             animate={{ y: [0, 10, 0] }}
